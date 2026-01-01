@@ -2,6 +2,7 @@ sequenceDiagram
     participant C as Cliente
     participant R as app.routes
     participant F as app.factura_electronica
+    participant FE as app.factura_exportacion
     participant P as pyafipws
     participant A as AFIP
 
@@ -32,4 +33,32 @@ sequenceDiagram
     F-->>R: JSON con CAE y nro_comprobante
     deactivate F
     R-->>C: JSON Response
+    deactivate R
+
+    Note over C,A: --- Facturación de Exportación ---
+    C->>R: POST /api/afipws/facturador_exportacion (con JSON)
+    activate R
+    R->>FE: facturar_exportacion(json_data)
+    activate FE
+    FE->>P: WSAA.Autenticar()
+    activate P
+    P->>A: Solicitar Token de Acceso
+    A-->>P: Token de Acceso
+    P-->>FE: Token de Acceso (TA)
+    deactivate P
+    
+    FE->>FE: CrearFactura WSFEXv1
+    FE->>P: wsfex.CrearFactura(...)
+    FE->>P: wsfex.AgregarItem(...)
+    FE->>P: wsfex.Authorize()
+    activate P
+    P->>A: Solicitar CAE Exportación
+    A-->>P: CAE y Datos de Autorización
+    P-->>FE: wsfex.CAE, wsfex.FchVencCAE
+    deactivate P
+    
+    deactivate FE
+    FE-->>R: JSON con CAE y datos exportación
+    deactivate FE
+    R-->>C: JSON Response Exportación
     deactivate R

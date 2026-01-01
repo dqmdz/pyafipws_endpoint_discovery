@@ -81,7 +81,7 @@ def create_app(config: Dict[str, Any] = None) -> Flask:
     # Configurar Flask-RESTX con Swagger
     api = Api(
         app,
-        version='2.3.0',
+        version='2.4.0',
         title='pyafipws API',
         description='API REST para emisión de comprobantes electrónicos AFIP',
         doc='/swagger/',

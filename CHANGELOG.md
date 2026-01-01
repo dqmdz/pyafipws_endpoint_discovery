@@ -2,6 +2,26 @@
 
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 
+## [2.4.0] - 2026-01-01
+
+### Nuevas características
+- **Facturación de Exportación**: Se agregó soporte completo para emisión de comprobantes electrónicos de exportación (WSFEXv1) incluyendo:
+  - Nuevo endpoint `POST /api/afipws/facturador_exportacion`
+  - Integración con servicio AFIP WSFEXv1 para comprobantes de exportación
+  - Soporte para facturas de exportación E con múltiples monedas
+  - Validación completa de datos de exportación según normativa AFIP
+  - Manejo de incoterms, permisos de embarque y datos de importadores
+
+### Mejoras
+- **Documentación Swagger**: Se añadieron modelos completos de datos para facturación de exportación con validación automática
+- **Ejemplos de Uso**: Se incluyeron ejemplos detallados de facturación de exportación en la documentación
+- **Logging Mejorado**: Agregado logging específico para operaciones de exportación con trazabilidad completa
+
+### Cambios técnicos
+- Nuevo archivo `app/factura_exportacion.py` con lógica completa de facturación de exportación
+- Actualizado `app/routes.py` para incluir el nuevo endpoint y modelos Swagger
+- Actualizada documentación del README con ejemplos de facturación de exportación
+
 ## [2.3.0] - 2025-07-09
 
 ### Nuevas características
