@@ -1,0 +1,75 @@
+sequenceDiagram
+    participant C as Cliente
+    participant R as app.routes
+    participant FE as app.factura_exportacion
+    participant P as pyafipws
+    participant A as AFIP
+
+    C->>R: POST /api/afipws/facturador_exportacion
+    activate R
+    Note over R: Validar campos requeridos:
+    Note over R: - tipo_afip, punto_venta
+    Note over R: - cliente, pais_dst_cmp
+    Note over R: - total, moneda_id, moneda_ctz
+    Note over R: - items[], domicilio_cliente
+
+    R->>FE: facturar_exportacion(json_data, production)
+    activate FE
+    
+    FE->>P: WSAA.Autenticar("wsfex", ...)
+    activate P
+    P->>A: Solicitar Token Acceso WSFEXv1
+    A-->>P: Ticket de Acceso (TA)
+    P-->>FE: TA para WSFEXv1
+    deactivate P
+    
+    FE->>P: wsfex.SetTicketAcceso(TA)
+    FE->>P: wsfex.Conectar()
+    
+    alt Número de comprobante no especificado
+        FE->>P: wsfex.GetLastCMP(tipo_cbte, punto_vta)
+        P-->>FE: Último número
+        FE->>FE: cbte_nro = ultimo + 1
+    else Número especificado
+        Note over FE: Usar número proporcionado
+    end
+    
+    FE->>P: wsfex.CrearFactura(tipo_cbte, punto_vta, cbte_nro, ...)
+    activate P
+    P->>A: Crear Comprobante Exportación
+    A-->>P: Confirmación creación
+    deactivate P
+    
+    loop Para cada item
+        FE->>P: wsfex.AgregarItem(codigo, ds, qty, ...)
+        activate P
+        P->>A: Agregar Item
+        A-->>P: Confirmación item
+        deactivate P
+    end
+    
+    FE->>P: wsfex.Authorize(request_id)
+    activate P
+    P->>A: Solicitar CAE Exportación
+    alt Autorización exitosa
+        A-->>P: CAE + Vencimiento
+        P-->>FE: {CAE: "xxx", FchVencCAE: "yyy"}
+    else Error en autorización
+        A-->>P: Error + Mensaje
+        P-->>FE: {ErrMsg, Obs}
+    end
+    deactivate P
+    
+    alt Éxito
+        FE-->>R: JSON con CAE, vencimiento, datos
+    else Error
+        FE-->>R: Error con mensaje detallado
+    end
+    deactivate FE
+    
+    alt Éxito
+        R-->>C: 200 OK - Factura autorizada
+    else Error
+        R-->>C: 500 Error - Detalles del error
+    end
+    deactivate R

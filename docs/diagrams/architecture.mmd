@@ -6,11 +6,14 @@ graph TD
 
     subgraph "AFIP Webservices (Externo)"
         D[WSAA - Autenticación];
-        E[WSFEv1 - Facturación];
+        E[WSFEv1 - Facturación Nacional];
+        F[WSFEXv1 - Facturación Exportación];
     end
 
     B -- "1. Autentica (WSAA)" --> D;
-    B -- "2. Opera (WSFEv1)" --> E;
+    B -- "2. Facturación Nacional (WSFEv1)" --> E;
+    B -- "3. Facturación Exportación (WSFEXv1)" --> F;
 
     style B fill:#cde4ff,stroke:#333,stroke-width:2px
     style C fill:#fff2cc,stroke:#333,stroke-width:2px
+    style F fill:#d4edda,stroke:#333,stroke-width:2px

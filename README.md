@@ -14,6 +14,7 @@ Servicio REST basado en [pyafipws v2025.05.05](https://github.com/dqmdz/pyafipws
 ## Características
 
 - Emisión de comprobantes electrónicos AFIP (Facturas, Notas de Crédito/Débito)
+- **Emisión de comprobantes de Exportación (WSFEXv1)**
 - Integración con Consul Service Discovery
 - API REST con Flask 3.0.1
 - **Documentación automática con Swagger/OpenAPI**
@@ -126,6 +127,29 @@ Emite un comprobante electrónico.
 - `asociado_numero_comprobante`: Número de comprobante asociado
 - `asociado_fecha_comprobante`: Fecha del comprobante asociado
 
+### POST /api/afipws/facturador_exportacion
+
+Emite un comprobante electrónico de exportación (WSFEXv1).
+
+**Campos requeridos:**
+- `tipo_afip`: Tipo de comprobante AFIP (ej. 19 para Factura de Exportación E)
+- `punto_venta`: Punto de venta
+- `cliente`: Nombre del cliente importador
+- `domicilio_cliente`: Domicilio del cliente importador
+- `pais_dst_cmp`: Código de país de destino (AFIP)
+- `total`: Importe total
+- `moneda_id`: Código de moneda (ej. 'DOL', 'PES')
+- `moneda_ctz`: Cotización de la moneda
+- `items`: Lista de items a facturar
+
+**Campos de items (requeridos):**
+- `pro_codigo`: Código del producto
+- `pro_ds`: Descripción del producto
+- `pro_qty`: Cantidad
+- `pro_umed`: Unidad de medida AFIP
+- `pro_precio_uni`: Precio unitario
+- `pro_total_item`: Total del item
+
 ### GET /api/afipws/consulta_comprobante
 
 Consulta un comprobante electrónico ya emitido.
@@ -190,6 +214,33 @@ curl -X POST "http://localhost:5086/api/afipws/facturador" \
     "id_condicion_iva": 1,
     "neto": 1000.0,
     "iva": 210.0
+  }'
+
+# Emitir una factura de exportación
+curl -X POST "http://127.0.0.1:5000/api/afipws/facturador_exportacion" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tipo_afip": 19,
+    "punto_venta": 1,
+    "cliente": "Foreign Import Corp",
+    "domicilio_cliente": "123 International Way, New York, USA",
+    "pais_dst_cmp": 200,
+    "id_impositivo": "TAX12345678",
+    "total": 1000.0,
+    "moneda_id": "DOL",
+    "moneda_ctz": 1000.0,
+    "items": [
+      {
+        "pro_codigo": "PR01",
+        "pro_ds": "Exported Product",
+        "pro_qty": 10,
+        "pro_umed": 7,
+        "pro_precio_uni": 100.0,
+        "pro_total_item": 1000.0
+      }
+    ],
+    "incoterms": "FOB",
+    "tipo_expo": 1
   }'
 ```
 
